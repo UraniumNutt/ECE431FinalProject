@@ -8,9 +8,14 @@ transmit_spi:
 
 spi_bit_loop:
 
+    lda PORTA
+	ora #BIT1 ; set the data to high
+    and #~BIT0 ; set the clock low
+	sta PORTA 
+
 	; set up the data
 	lda SPIDATA
-	and #BIT0
+	and #BIT7
 	beq spi_bit_zero
 	lda #BIT1
 	ora PORTA
@@ -21,19 +26,24 @@ spi_bit_zero:
 spi_bit_write:
 	sta PORTA
 
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+
     lda PORTA
-	and #~BIT0
-	sta PORTA ; set the clock low
+    ora #BIT0 ; set the clock to high
+	sta PORTA 
 
 	lda SPIDATA
 	clc
-	lsr
+	asl
 	sta SPIDATA ; shift the data byte
 
-    lda PORTA
-	ora #BIT1 ; set the data to high
-    ora #BIT0 ; set the clock to high
-	sta PORTA 
 
 	dex         ; decrement the counter of the number of shifts remaining
 	bne spi_bit_loop ; if the counter is not zero, repeat the loop
@@ -66,6 +76,9 @@ spi_clock_frame:
 
     ldx #16
 spi_clock_frame_loop:
+    nop
+    nop
+    nop
     lda #BIT0
     eor PORTA
     sta PORTA

@@ -37,7 +37,7 @@ main:
     and #~BIT2
     sta PORTA ; set the cs to low
 	
-	lda #%01000000
+	lda #$40
 	sta SPIDATA
 	jsr transmit_spi
 
