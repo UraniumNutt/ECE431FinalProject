@@ -42,7 +42,7 @@ ACIAByteOut ; sends one byte from the ACIA
     sta ACIADATA ; sends a out
     rts
 
-ACIAPrintHex
+PrintHex
 
     pha ; save a to the stack
     lda #'0'
@@ -65,6 +65,7 @@ ACIAPrintHex
 
 HexDigitConverter
 
+    clc
     and #$f ; make out the upper nibble
     cmp #10 ; if it is 10 or greater it is a letter
     bmi letter
@@ -99,5 +100,6 @@ PrintNewLine
     jsr PrintString
     rts
 
-NewLine: .asciiz $0D,$0A
+NewLine: 
+    .asciiz "\r\n"
 

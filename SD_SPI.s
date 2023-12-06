@@ -41,6 +41,9 @@ main:
 	jsr spi_read_byte
 	jsr spi_read_byte
 
+	ldptr cardinitmesg, stringptr
+	jsr PrintString
+
 cardinitloop
 	
 	jsr wait
@@ -51,6 +54,7 @@ cardinitloop
 	jsr spi_sd_send_command
 	cmp #$00
 	bne cardinitloop
+
 	ldptr initsuccess, stringptr
 	jsr PrintString
 
@@ -63,7 +67,6 @@ cardinitloop
 	ldptr dumpmesg, stringptr
 	jsr PrintString
 
-	jsr spi_clock_frame
 	jsr spi_sd_read_sector
 
 	jsr spi_inactive
@@ -73,20 +76,6 @@ cardinitloop
 end:
 	jmp end 
 
-cmd0:
-	.byte $40, $00, $00, $00, $00, $95
-cmd1:
-	.byte $41, $00, $00, $00, $00, $96
-cmd8:
-	.byte $48, $00, $00, $01, $aa, $87
-cmd9:
-	.byte $49, $00, $00, $00, $00, $01
-cmd17:
-	.byte $51, $00, $00, $00, $00, $01
-cmd55:
-	.byte $77, $00, $00, $00, $00, $01
-cmd41:
-	.byte $69, $40, $00, $00, $00, $01
 
 startmessage:
 	.asciiz "Debugging SPI: \r\n"

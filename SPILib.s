@@ -85,7 +85,7 @@ spi_sd_send_command:
     ldy #0
 spi_sd_send_command_loop:
     lda (SPIBUFFER),y
-    jsr ACIAPrintHex
+    jsr PrintHex
     sta SPIDATA
     jsr transmit_spi
     iny
@@ -94,12 +94,12 @@ spi_sd_send_command_loop:
     tya
     cmp #6
     bne spi_sd_send_command_loop
-    jsr wait
+    ;jsr wait
     ldptr returncodemesg, stringptr
 	jsr PrintString
 	jsr get_return_code
     pha
-	jsr ACIAPrintHex
+	jsr PrintHex
 	jsr PrintNewLine
     pla
     ;jsr spi_inactive
@@ -113,19 +113,20 @@ get_return_code:
     rts
 
 spi_sd_read_sector:
+    jsr spi_clock_frame
+    jsr spi_clock_frame
+    jsr spi_clock_frame
     ldy #8
     ldx #32
 read_sector_loop:
     phy
     phx
-    jsr spi_clock_frame
     jsr spi_read_byte
-    jsr ACIAPrintHex
+    jsr PrintHex
     lda #' '
     jsr ACIAByteOut
-    jsr spi_clock_frame
     jsr spi_read_byte
-    jsr ACIAPrintHex
+    jsr PrintHex
     lda #' '
     jsr ACIAByteOut
     plx
@@ -195,7 +196,7 @@ spi_inactive:
     rts
 
 wait:
-	ldx #64
+	ldx #255
 waitloop:
 	nop
 	nop
@@ -211,3 +212,18 @@ sequencemesg:
 	.asciiz "Printing SPI sequences: \r\n"
 returncodemesg:
 	.asciiz " Command return code: "
+
+cmd0:
+	.byte $40, $00, $00, $00, $00, $95
+cmd1:
+	.byte $41, $00, $00, $00, $00, $96
+cmd8:
+	.byte $48, $00, $00, $01, $aa, $87
+cmd9:
+	.byte $49, $00, $00, $00, $00, $01
+cmd17:
+	.byte $51, $00, $00, $00, $00, $01
+cmd55:
+	.byte $77, $00, $00, $00, $00, $01
+cmd41:
+	.byte $69, $40, $00, $00, $00, $01
