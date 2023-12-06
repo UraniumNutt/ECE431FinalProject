@@ -13,105 +13,101 @@ reset:
 	txs
 
 	sei
-
-	;jsr ACIAInit
-
+	jsr ACIAInit
 	jsr VIA_output_all
-	;jsr VIA_T1_continous_interrupts
-	
-	; jsr ACIAWaitRx
-	; ldptr testmessage, stringptr
-	; jsr PrintString
-	;cli
+	jsr ACIAWaitRx
 
 	jsr spi_idle    	; set spi to the idle state
-	jsr small_delay     ; add a small delay 
 	
-
 main:
 
+	ldptr startmessage, stringptr
+	jsr PrintString
+	jsr PrintNewLine
+	ldptr sequencemesg, stringptr
+	jsr PrintString
+
 	jsr spi_sd_init
-	jsr small_delay
 
-	lda PORTA
-    and #~BIT2
-    sta PORTA ; set the cs to low
+	jsr spi_active
 	
-	lda #$40
-	sta SPIDATA
-	jsr transmit_spi
+	ldptr cmd0, SPIBUFFER
+	jsr spi_sd_send_command
 
-	lda #%00000000
-	sta SPIDATA
-	jsr transmit_spi
+	ldptr cmd8, SPIBUFFER
+	jsr spi_sd_send_command
+	jsr spi_read_byte
+	jsr spi_read_byte
+	jsr spi_read_byte
+	jsr spi_read_byte
 
-	lda #%00000000
-	sta SPIDATA
-	jsr transmit_spi
+cardinitloop
+	
+	jsr wait
+	ldptr cmd55, SPIBUFFER
+	jsr spi_sd_send_command
+	
+	ldptr cmd41, SPIBUFFER
+	jsr spi_sd_send_command
+	cmp #$00
+	bne cardinitloop
+	ldptr initsuccess, stringptr
+	jsr PrintString
 
-	lda #%00000000
-	sta SPIDATA
-	jsr transmit_spi
+	ldptr startingread, stringptr
+	jsr PrintString
 
-	lda #%00000000
-	sta SPIDATA
-	jsr transmit_spi
+	ldptr cmd17, SPIBUFFER
+	jsr spi_sd_send_command
 
-	lda #$95
-	sta SPIDATA
-	jsr transmit_spi
+	ldptr dumpmesg, stringptr
+	jsr PrintString
 
 	jsr spi_clock_frame
-	jsr spi_clock_frame
-	
-	lda PORTA
-    eor #BIT2
-    sta PORTA ; set the cs to high
+	jsr spi_sd_read_sector
+
+	jsr spi_inactive
+	jsr spi_idle
+
 
 end:
-	jmp end
+	jmp end 
 
-base_delay:
-	ldx #0
-	ldy #0
-base_loop:
-	dey
-	bne base_loop
-	dex
-	bne base_loop
-	rts
+cmd0:
+	.byte $40, $00, $00, $00, $00, $95
+cmd1:
+	.byte $41, $00, $00, $00, $00, $96
+cmd8:
+	.byte $48, $00, $00, $01, $aa, $87
+cmd9:
+	.byte $49, $00, $00, $00, $00, $01
+cmd17:
+	.byte $51, $00, $00, $00, $00, $01
+cmd55:
+	.byte $77, $00, $00, $00, $00, $01
+cmd41:
+	.byte $69, $40, $00, $00, $00, $01
 
-small_delay:
-	jsr base_delay
-	jsr base_delay
-	jsr base_delay
-	jsr base_delay
-	jsr base_delay
-	jsr base_delay
-	jsr base_delay
-	jsr base_delay
-	rts
+startmessage:
+	.asciiz "Debugging SPI: \r\n"
+dumpmesg:
+	.asciiz "Dumping contents of first sector (512 Bytes): \r\n"
+startingread:
+	.asciiz "Starting CMD17!\r\n"
+cardinitmesg:
+	.asciiz "Entering initalization loop until 0x00 is returned.\r\n"
+initsuccess:
+	.asciiz "Initalization success!\r\n"
 
-testmessage: .asciiz "R A I N B O W !"
 
 nmi:
 exitnmi:
 	rti	
 irq:
 	save_stack
-	
-	lda IFR
-	and #%11000000
-	beq exitirq ; if the interupt was not caused by T1 on the VIA, then exit
-
-	lda T1CL
-	lda PORTA
-	EOR #$1
-	sta PORTA	
 exitirq:
 	
 	restore_stack
-	
 	rti
 
 	.org $fffa

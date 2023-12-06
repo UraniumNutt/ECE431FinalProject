@@ -42,6 +42,38 @@ ACIAByteOut ; sends one byte from the ACIA
     sta ACIADATA ; sends a out
     rts
 
+ACIAPrintHex
+
+    pha ; save a to the stack
+    lda #'0'
+    jsr ACIAByteOut
+    lda #'x'
+    jsr ACIAByteOut
+    pla ; load a from the stack
+    pha ; save it again
+    pha ; and again
+    ror
+    ror
+    ror
+    ror
+    jsr HexDigitConverter
+    pla ; pull it again
+    jsr HexDigitConverter
+    ;jsr PrintNewLine
+    pla ; pull it one last time, so a is not clobbered when returning
+    rts
+
+HexDigitConverter
+
+    and #$f ; make out the upper nibble
+    cmp #10 ; if it is 10 or greater it is a letter
+    bmi letter
+    adc #6
+letter
+    adc #48
+    jsr ACIAByteOut
+    rts
+
 PrintString ; print the sting at the specified pointer
 
     phy

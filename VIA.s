@@ -26,7 +26,6 @@ BIT5 = %00100000
 BIT6 = %01000000
 BIT7 = %10000000
 
-
 VIA_output_all:
     lda #%11111111 ; Set all pins on port B to output
 	sta DDRB
