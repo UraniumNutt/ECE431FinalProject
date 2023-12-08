@@ -47,3 +47,5 @@ VIA_T1_continous_interrupts
 	lda #%11000000
 	sta IER ; enable VIA interupts for T1
     rts
+
+
