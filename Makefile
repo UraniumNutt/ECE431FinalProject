@@ -1,4 +1,4 @@
-PROJ=SD_SPI
+PROJ=main
 FLASHIC = SST39SF040
 
 # Add Windows and Unix support
